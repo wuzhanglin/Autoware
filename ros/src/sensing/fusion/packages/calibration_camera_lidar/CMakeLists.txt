@@ -115,30 +115,38 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 
     qt5_wrap_ui(calibration_toolkit_ui_mainwindow nodes/calibration_toolkit/mainwindow.ui)
 
+    set(CMAKE_BUILD_TYPE DEBUG)
+    set(CMAKE_C_FLAGS "-O0 -ggdb")
+    set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb")
+    set(CMAKE_C_FLAGS_RELEASE "-O0 -ggdb")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -O0 -ggdb")
+    set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -O0 -ggdb")
+    set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O0 -ggdb")
+
     add_executable(calibration_toolkit
-            nodes/calibration_toolkit/main.cpp
-            nodes/calibration_toolkit/mainwindow.cpp
-            nodes/calibration_toolkit/mainwindow.h
-            ${calibration_toolkit_ui_mainwindow}
-            )
+    nodes/calibration_toolkit/main.cpp
+    nodes/calibration_toolkit/mainwindow.cpp
+    nodes/calibration_toolkit/mainwindow.h
+    ${calibration_toolkit_ui_mainwindow}
+    )
 
     set_target_properties(calibration_toolkit
-            PROPERTIES COMPILE_FLAGS "-fPIC"
-            )
+    PROPERTIES COMPILE_FLAGS "-fPIC"
+    )
 
     ## Specify libraries to link a library or executable target against
     target_link_libraries(calibration_toolkit
-            ${catkin_LIBRARIES}
-            ${OpenCV_LIBS}
-            calibrationtoolkit
-            ${GLUT_LIBRARIES}
-            ${OPENGL_LIBRARIES}
-            nlopt
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::OpenGL
-            )
-endif ()
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    calibrationtoolkit
+    glut
+    GLU
+    nlopt
+    Qt5::Core
+    Qt5::Widgets
+    Qt5::OpenGL
+    )
+endif()
 # calibration_publisher
 add_executable(calibration_publisher
         nodes/calibration_publisher/calibration_publisher.cpp
