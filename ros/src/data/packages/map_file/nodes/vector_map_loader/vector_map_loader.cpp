@@ -222,6 +222,39 @@ visualization_msgs::MarkerArray createGutterMarkerArray(const VectorMap& vmap, C
   return marker_array;
 }
 
+visualization_msgs::MarkerArray createLaneCenterMarkerArray(const VectorMap& vmap, Color color)
+{
+  visualization_msgs::MarkerArray marker_array;
+  int id = 0;
+  for (const auto& lane : vmap.findByFilter([](const DTLane& lane){return true;}))
+  {
+    if (lane.pid == 0)
+    {
+      ROS_ERROR_STREAM("[createCenterLaneMarkerArray] invalid lane: " << lane);
+      continue;
+    }
+
+    Point point = vmap.findByKey(Key<Point>(lane.pid));
+    if (point.pid == 0)
+    {
+      ROS_ERROR_STREAM("[createCurbMarkerArray] invalid line: " << point);
+      continue;
+    }
+
+//    if (line.blid == 0) // if beginning line
+//    {
+      visualization_msgs::Marker marker = createPointMarker("lane_center", id++, color, point);
+      //visualization_msgs::Marker marker = createLinkedLineMarker("lane_lane", id++, color, vmap, line);
+      // XXX: The visualization_msgs::Marker::LINE_STRIP is difficult to deal with curb.width and curb.height.
+      if (isValidMarker(marker))
+        marker_array.markers.push_back(marker);
+      else
+        ROS_ERROR_STREAM("[createCurbMarkerArray] failed createLinkedLineMarker: " << point);
+//    }
+  }
+  return marker_array;
+}
+
 visualization_msgs::MarkerArray createCurbMarkerArray(const VectorMap& vmap, Color color)
 {
   visualization_msgs::MarkerArray marker_array;
@@ -1238,6 +1271,7 @@ int main(int argc, char **argv)
   vmap.subscribe(nh, category);
 
   visualization_msgs::MarkerArray marker_array;
+  insertMarkerArray(marker_array, createLaneCenterMarkerArray(vmap, Color::GREEN));
   insertMarkerArray(marker_array, createRoadEdgeMarkerArray(vmap, Color::GRAY));
   insertMarkerArray(marker_array, createGutterMarkerArray(vmap, Color::GRAY, Color::GRAY, Color::GRAY));
   insertMarkerArray(marker_array, createCurbMarkerArray(vmap, Color::GRAY));
