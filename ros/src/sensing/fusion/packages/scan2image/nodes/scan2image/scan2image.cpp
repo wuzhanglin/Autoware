@@ -231,7 +231,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe("scan", 1, scanCallback);
     ros::Subscriber projection_sub = n.subscribe("projection_matrix", 1, projection_callback);
-    ros::Subscriber intrinsic_sub = n.subscribe("camera/camera_info", 1, intrinsic_callback);
+    ros::Subscriber intrinsic_sub = n.subscribe("camera_info", 1, intrinsic_callback);
     transformed_point_data = n.advertise<autoware_msgs::ScanImage>("scan_image", 1);
 
     ros::spin();
