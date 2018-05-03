@@ -111,6 +111,13 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 
 qt5_wrap_ui(calibration_toolkit_ui_mainwindow nodes/calibration_toolkit/mainwindow.ui)
 
+set(CMAKE_BUILD_TYPE DEBUG)
+set(CMAKE_C_FLAGS "-O0 -ggdb")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb")
+set(CMAKE_C_FLAGS_RELEASE "-O0 -ggdb")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O0 -ggdb")
+set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -O0 -ggdb")
+set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O0 -ggdb")
 
 add_executable(calibration_toolkit
   nodes/calibration_toolkit/main.cpp
