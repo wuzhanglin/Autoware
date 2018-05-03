@@ -41,7 +41,7 @@ GLViewer::GLViewer(QWidget *parent) :
     cameraparameters.maxView=1000;
     cameraparameters.width=0;
     cameraparameters.height=0;
-    cameraparameters.background=Eigen::Vector4d(0,0,0,1);
+    cameraparameters.background=Eigen::Vector4d(0.5,0.5,0.5,1);
     cameraparameters.lightambient[0]=1.0;
     cameraparameters.lightambient[1]=1.0;
     cameraparameters.lightambient[2]=1.0;
