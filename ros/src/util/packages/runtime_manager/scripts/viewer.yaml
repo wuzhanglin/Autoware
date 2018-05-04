@@ -3,7 +3,7 @@ viewers :
     - label : ROS
       subs  :
       - label : Rviz
-        cmd   : rosrun rviz rviz
+        cmd   : rosrun rviz rviz -d ~/autoware/ros/src/.config/rviz/default.rviz
       - label : Topics
         cmd   : rosrun rqt_graph rqt_graph
     - label : Vehicle
