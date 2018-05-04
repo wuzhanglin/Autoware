@@ -17,7 +17,7 @@ fi
 #echo KEYFILE=[$KEYFILE]
 
 if [ x"$REMOTE" = x ]; then
-    rosrun rviz rviz
+    rosrun rviz rviz -d ~/autoware/ros/src/.config/rviz/default.rviz
 else
   KEYOPT=""
   if [ x"$KEYFILE" != x ]; then
@@ -38,7 +38,7 @@ else
     [ "$REMOTE_DISPLAY" != "-" ] && DISPLAY=$REMOTE_DISPLAY
     export ROS_IP ROS_MASTER_URI DISPLAY
     export GNOME_DESKTOP_SESSION_ID="this-is-deprecated"
-    rosrun rviz rviz
+    rosrun rviz rviz -d ~/autoware/ros/src/.config/rviz/default.rviz
     #xeyes
 EOF
 fi
