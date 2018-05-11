@@ -26,7 +26,7 @@
 	<arg name="wayarea_gridmap_layer" default="wayarea" />
 	<arg name="wayarea_no_road_value" default="255" />
 
-	<arg name="output_frame" default="velodyne" />
+	<arg name="output_frame" default="map" />
 
 	<arg name="remove_points_upto" default="0.0" />
 
