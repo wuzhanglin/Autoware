@@ -23,7 +23,7 @@
 	<arg name="use_vector_map" default="true" />
 	<arg name="vectormap_frame" default="map" />
 
-	<arg name="output_frame" default="velodyne" />
+	<arg name="output_frame" default="map" />
 
 	<arg name="remove_points_upto" default="0.0" />
 
