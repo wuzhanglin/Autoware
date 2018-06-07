@@ -22,12 +22,13 @@ else
 fi
 echo "Shared directory: ${HOST_DIR}"
 
-nvidia-docker run \
+docker run \
+    --runtime nvidia\
     -it --rm \
-    --volume=$XSOCK:$XSOCK:rw \
     --volume=$XAUTH:$XAUTH:rw \
     --volume=$HOST_DIR:$SHARED_DIR:rw \
     --env="XAUTHORITY=${XAUTH}" \
+    --volume=$XSOCK:$XSOCK:rw \
     --env="DISPLAY=${DISPLAY}" \
     -u autoware \
     --privileged -v /dev/bus/usb:/dev/bus/usb \
