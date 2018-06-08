@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <geo_pos_conv.hh>
+#include <gnss/geo_pos_conv.hpp>
 
 double geo_pos_conv::x() const
 {
@@ -54,14 +54,7 @@ void geo_pos_conv::set_plane(double lat, double lon)
 void geo_pos_conv::set_plane(int num)
 {
   int lon_deg, lon_min, lat_deg, lat_min; // longitude and latitude of origin of each plane in Japan
-  if (num == 0)
-  {
-    lon_deg = 0;
-    lon_min = 0;
-    lat_deg = 0;
-    lat_min = 0;
-  }
-  else if (num == 1)
+  if (num == 1)
   {
     lon_deg = 33;
     lon_min = 0;
@@ -214,16 +207,9 @@ void geo_pos_conv::set_llh_nmea_degrees(double latd, double lond, double h)
   // 1234.56 -> 12'34.56 -> 12+ 34.56/60
 
   lad = floor(latd / 100.);
-  if (lad < 0) {
-      lad++;
-  }
-
-  lat = fmod(latd, 100.);
+  lat = latd - lad * 100.;
   lod = floor(lond / 100.);
-  if (lod < 0) {
-      lod++;
-  }
-  lon = fmod(lond, 100.);
+  lon = lond - lod * 100.;
 
   // Changing Longitude and Latitude to Radians
   m_lat = (lad + lat / 60.0) * M_PI / 180;

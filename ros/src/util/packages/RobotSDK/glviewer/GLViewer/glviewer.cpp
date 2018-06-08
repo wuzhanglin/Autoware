@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "glviewer.h"
+#include "glviewer/glviewer.h"
 
 #define GL_PI 3.1415926535897932384626433832795
 
@@ -41,7 +41,7 @@ GLViewer::GLViewer(QWidget *parent) :
     cameraparameters.maxView=1000;
     cameraparameters.width=0;
     cameraparameters.height=0;
-    cameraparameters.background=Eigen::Vector4d(0.5,0.5,0.5,1);
+    cameraparameters.background=Eigen::Vector4d(0,0,0,1);
     cameraparameters.lightambient[0]=1.0;
     cameraparameters.lightambient[1]=1.0;
     cameraparameters.lightambient[2]=1.0;
