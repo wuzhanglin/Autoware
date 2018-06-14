@@ -1,5 +1,5 @@
 FROM nvidia/cuda:8.0-devel-ubuntu16.04
-MAINTAINER Yuki Iida <yuki.iida@tier4.jp>
+
 
 # Develop
 RUN apt-get update && apt-get install -y \
@@ -9,7 +9,43 @@ RUN apt-get update && apt-get install -y \
         libflann-dev \
         libgsl0-dev \
         libgoogle-perftools-dev \
-        libeigen3-dev
+        libeigen3-dev \
+	ca-certificates \
+	make \
+	autoconf \
+	libtool \
+	pkg-config \
+	python \
+	libxext-dev \
+	x11proto-gl-dev &&\
+	rm -rf /var/lib/apt/lists/*
+ 
+
+WORKDIR /opt/libglvnd
+RUN git clone --branch=v1.0.0 https://github.com/NVIDIA/libglvnd.git . && \
+    ./autogen.sh && \
+    ./configure --prefix=/usr/local --libdir=/usr/local/lib/x86_64-linux-gnu && \
+    make -j"$(nproc)" install-strip && \
+    find /usr/local/lib/x86_64-linux-gnu -type f -name 'lib*.la' -delete
+
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        gcc-multilib \
+        libxext-dev:i386 \
+        libx11-dev:i386 && \
+    rm -rf /var/lib/apt/lists/*
+
+
+
+COPY 10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
+
+RUN echo '/usr/local/lib/x86_64-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
+    echo '/usr/local/lib/i386-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
+    ldconfig
+
+ENV LD_LIBRARY_PATH /usr/local/lib/x86_64-linux-gnu:/usr/local/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+
 
 # Intall some basic GUI and sound libs
 RUN apt-get update && apt-get install -y \
@@ -31,6 +67,12 @@ RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C3
 RUN apt-get update && apt-get install -y ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
 RUN apt-get update && apt-get install -y ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
 RUN apt-get update && apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests
+
+# SSD dependencies
+#RUN apt-get update && apt-get install -y libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
+#RUN apt-get update && apt-get install --no-install-recommends -y libboost-all-dev
+#RUN apt-get update && apt-get install -y libatlas-base-dev libgoogle-glog-dev libgflags-dev liblmdb-dev
+#RUN apt-get update && apt-get install libhdf5-10 libhdf5-serial-dev libhdf5-dev libhdf5-cpp-11
 
 # Add basic user
 ENV USERNAME autoware
@@ -64,11 +106,28 @@ RUN cd && git clone https://github.com/pjreddie/darknet.git
 RUN cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
 RUN cd ~/darknet/data && wget https://pjreddie.com/media/files/yolo.weights
 
+# SSD
+#RUN cd ~ && git clone https://github.com/weiliu89/caffe.git ssdcaffe
+#RUN cd ~/ssdcaffe && git checkout 5365d0dccacd18e65f10e840eab28eb65ce0cda7
+#RUN cd ~/ssdcaffe && printf "CUDA_DIR := /usr/local/cuda \
+#	CUDA_ARCH := -gencode arch=compute_30,code=sm_30 code arch=compute_35,code=sm_35 code arch=compute_50,code=sm_50 code arch=compute_52,code=sm_52 code arch=compute_60,code=sm_60 code arch=compute_61,code=sm_61 code arch=compute_61,code=compute_61 \
+#	BLAS := atlas \
+#	PYTHON_INCLUDE := /usr/include/python2.7 2.7/dist-packages/numpy/core/include \
+#	PYTHON_LIB := /usr/lib \
+#	INCLUDE_DIRS :=  /usr/local/include /usr/include/hdf5/serial \
+#	LIBRARY_DIRS :=  /usr/local/lib /usr/lib \
+#	BUILD_DIR := build \
+#	DISTRIBUTE_DIR := distribute \
+#	TEST_GPUID := 0 \
+#	Q ?= @" >> Makefile.config
+#RUN cd ~/ssdcaffe && mkdir build && cd build && cmake .. && make all && make install # && make runtest
+#RUN cd ~/ssdcaffe/models && wget https://drive.google.com/open?id=0BzKzrI_SkD1_dlJpZHJzOXd3MTg
+
 # Install Autoware
-RUN cd && mkdir /home/$USERNAME/Autoware
-COPY --chown=autoware ./ /home/$USERNAME/Autoware/
-RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release'
-RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
+COPY autoware /home/$USERNAME/autoware
+RUN sudo chown -R autoware /home/$USERNAME/autoware
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release'
+RUN echo "source /home/$USERNAME/autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
 
 # Setting
 ENV LANG="en_US.UTF-8"
@@ -82,5 +141,13 @@ RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_backgroun
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_colors" --type bool false
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/background_color" --type string "#000000"
 
+
+ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},graphics
+
 # Default CMD
 CMD ["/bin/bash"]
+
+
+
+
+
