@@ -43,6 +43,16 @@
 
 #include <gnss/geo_pos_conv.hpp>
 
+struct pose
+{
+  double x;
+  double y;
+  double z;
+  double roll;
+  double pitch;
+  double yaw;
+};
+
 namespace gnss_localizer
 {
 class Nmea2TFPoseNode
@@ -60,6 +70,7 @@ private:
 
   // publisher
   ros::Publisher pub1_;
+  ros::Publisher pub2_;
 
   // subscriber
   ros::Subscriber sub1_;
@@ -73,8 +84,12 @@ private:
   geo_pos_conv geo_;
   geo_pos_conv last_geo_;
   double roll_, pitch_, yaw_;
+
+  pose current_pose_;
+  pose prev_pose_;
+
   double orientation_time_, position_time_;
-  ros::Time current_time_, orientation_stamp_;
+  ros::Time current_time_, prev_time_, orientation_stamp_;
   tf::TransformBroadcaster br_;
 
   // callbacks
@@ -85,6 +100,7 @@ private:
 
   // functions
   void publishPoseStamped();
+  void publishGnssTwistStamped();
   void publishTF();
   void createOrientation();
   void convert(std::vector<std::string> nmea, ros::Time current_stamp);
