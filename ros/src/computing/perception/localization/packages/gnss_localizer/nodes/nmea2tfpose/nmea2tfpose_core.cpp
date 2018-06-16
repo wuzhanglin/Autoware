@@ -65,6 +65,7 @@ void Nmea2TFPoseNode::initForROS()
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::PoseStamped>("gnss_pose", 10);
+  pub2_ = nh_.advertise<geometry_msgs::TwistStamped>("gnss_twist", 10);
 }
 
 void Nmea2TFPoseNode::run()
@@ -75,14 +76,158 @@ void Nmea2TFPoseNode::run()
 void Nmea2TFPoseNode::publishPoseStamped()
 {
   geometry_msgs::PoseStamped pose;
+
+  /*
+  prev_pose_ = current_pose_;
+  prev_pose_.header.frame_id = current_pose_.header.frame_id;
+  prev_pose_.header.stamp = current_pose_.header.stamp;
+
+  prev_pose_.pose.position.x = current_pose_.pose.position.x;
+  prev_pose_.pose.position.y = current_pose_.pose.position.y;
+  prev_pose_.pose.position.z = current_pose_.pose.position.z;
+  prev_pose_.pose.orientation.z = current_pose_.pose.orientation.z;
+  */
+
+//  prev_time_ = current_time_;
+
+  prev_pose_.x = current_pose_.x;
+  prev_pose_.y = current_pose_.y;
+  prev_pose_.z = current_pose_.z;
+  prev_pose_.yaw = current_pose_.yaw;
+
+  //***
   pose.header.frame_id = MAP_FRAME_;
   pose.header.stamp = current_time_;
+
   pose.pose.position.x = geo_.y();
   pose.pose.position.y = geo_.x();
   pose.pose.position.z = geo_.z();
   pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll_, pitch_, yaw_);
+  //***
+
+  /*
+  current_pose_ = pose;
+  current_pose_.header.frame_id = pose.header.frame_id;
+  current_pose_.header.stamp = pose.header.stamp;
+
+  current_pose_.pose.position.x = pose.pose.position.x;
+  current_pose_.pose.position.y = pose.pose.position.y;
+  current_pose_.pose.position.z = pose.pose.position.z;
+  current_pose_.pose.orientation.z = pose.pose.orientation.z;
+  */
+  current_time_ = pose.header.stamp;
+  current_pose_.x = pose.pose.position.x;
+  current_pose_.y = pose.pose.position.y;
+  current_pose_.z = pose.pose.position.z;
+  current_pose_.yaw = yaw_;
+
+//  ROS_WARN("prev_time: %f, current_time: %f", prev_pose_.header.stamp.toSec(), current_pose_.header.stamp.toSec());
   pub1_.publish(pose);
 }
+
+void Nmea2TFPoseNode::publishGnssTwistStamped()
+{
+  geometry_msgs::TwistStamped twist;
+//  ros::Duration duration = (current_pose_.header.stamp - prev_pose_.header.stamp);
+
+//  ros::Duration duration = current_time_ - prev_time_;
+//  double t_secs = duration.toSec();
+
+  double t_secs = current_time_.toSec() - prev_time_.toSec();
+
+//  ROS_WARN("nmea2tfpose_core.cpp:99 : current_pose_.header.stamp = %f", current_pose_.header.stamp);
+//  ROS_WARN("nmea2tfpose_core.cpp:100 : prev_pose_.header.stamp = %f", prev_pose_.header.stamp);
+
+  double diff_x = (current_pose_.x - prev_pose_.x) / 10000;
+  double diff_y = (current_pose_.y - prev_pose_.y) / 10000;
+  double diff_z = (current_pose_.z - prev_pose_.z) / 10000;
+  double diff_yaw = (current_pose_.yaw - prev_pose_.yaw) / 1000;
+  double diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
+
+  ROS_WARN("nmea2tfpose_core.cpp:98 : t_secs = %f, diff_x = %f, diff_y = %f, diff_z = %f", t_secs, diff_x, diff_y, diff_z);
+
+  double current_velocity = diff / t_secs;
+  double angular_velocity = diff_yaw / t_secs;
+
+  twist.header.frame_id = "/base_link";
+  twist.twist.linear.x = current_velocity;
+  twist.twist.linear.y = 0;
+  twist.twist.linear.z = 0;
+  twist.twist.angular.z = angular_velocity;
+
+  pub2_.publish(twist);
+
+
+  /*
+  diff_x = current_pose.x - previous_pose.x;
+  diff_y = current_pose.y - previous_pose.y;
+  diff_z = current_pose.z - previous_pose.z;
+  diff_yaw = current_pose.yaw - previous_pose.yaw;
+  diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
+
+  current_velocity = diff / secs;
+  current_velocity_x = diff_x / secs;
+  current_velocity_y = diff_y / secs;
+  current_velocity_z = diff_z / secs;
+  angular_velocity = diff_yaw / secs;
+  */
+
+  /*
+  estimate_twist_msg.header.frame_id = "/base_link";
+  estimate_twist_msg.twist.linear.x = current_velocity;
+  estimate_twist_msg.twist.linear.y = 0.0;
+  estimate_twist_msg.twist.linear.z = 0.0;
+  estimate_twist_msg.twist.angular.x = 0.0;
+  estimate_twist_msg.twist.angular.y = 0.0;
+  estimate_twist_msg.twist.angular.z = angular_velocity;
+  */
+//  pub2_.publish(twist);
+}
+/*
+static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+{
+  tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
+                        input->pose.orientation.w);
+  tf::Matrix3x3 gnss_m(gnss_q);
+  current_gnss_pose.x = input->pose.position.x;
+  current_gnss_pose.y = input->pose.position.y;
+  current_gnss_pose.z = input->pose.position.z;
+  gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
+
+  if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
+  {
+    previous_pose.x = previous_gnss_pose.x;
+    previous_pose.y = previous_gnss_pose.y;
+    previous_pose.z = previous_gnss_pose.z;
+    previous_pose.roll = previous_gnss_pose.roll;
+    previous_pose.pitch = previous_gnss_pose.pitch;
+    previous_pose.yaw = previous_gnss_pose.yaw;
+
+    current_pose.x = current_gnss_pose.x;
+    current_pose.y = current_gnss_pose.y;
+    current_pose.z = current_gnss_pose.z;
+    current_pose.roll = current_gnss_pose.roll;
+    current_pose.pitch = current_gnss_pose.pitch;
+    current_pose.yaw = current_gnss_pose.yaw;
+
+    current_pose_imu = current_pose_odom = current_pose_imu_odom = current_pose;
+
+    offset_x = current_pose.x - previous_pose.x;
+    offset_y = current_pose.y - previous_pose.y;
+    offset_z = current_pose.z - previous_pose.z;
+    offset_yaw = current_pose.yaw - previous_pose.yaw;
+
+    init_pos_set = 1;
+  }
+
+  previous_gnss_pose.x = current_gnss_pose.x;
+  previous_gnss_pose.y = current_gnss_pose.y;
+  previous_gnss_pose.z = current_gnss_pose.z;
+  previous_gnss_pose.roll = current_gnss_pose.roll;
+  previous_gnss_pose.pitch = current_gnss_pose.pitch;
+  previous_gnss_pose.yaw = current_gnss_pose.yaw;
+}
+*/
 
 void Nmea2TFPoseNode::publishTF()
 {
@@ -155,6 +300,7 @@ void Nmea2TFPoseNode::convert(std::vector<std::string> nmea, ros::Time current_s
 
 void Nmea2TFPoseNode::callbackFromNmeaSentence(const nmea_msgs::Sentence::ConstPtr &msg)
 {
+  prev_time_ = current_time_;
   current_time_ = msg->header.stamp;
   convert(split(msg->sentence), msg->header.stamp);
 
@@ -168,6 +314,7 @@ void Nmea2TFPoseNode::callbackFromNmeaSentence(const nmea_msgs::Sentence::ConstP
       ROS_INFO("QQ is not subscribed. Orientation is created by atan2");
       createOrientation();
       publishPoseStamped();
+      publishGnssTwistStamped();
       publishTF();
       last_geo_ = geo_;
     }
@@ -178,6 +325,7 @@ void Nmea2TFPoseNode::callbackFromNmeaSentence(const nmea_msgs::Sentence::ConstP
   if (fabs(orientation_time_ - position_time_) < e)
   {
     publishPoseStamped();
+    publishGnssTwistStamped();
     publishTF();
     return;
   }
