@@ -532,7 +532,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   ros::Time current_gnss_time = input->header.stamp;
   static ros::Time previous_gnss_time = current_gnss_time;
 
-  if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
+  if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 0.1)
   {
     previous_pose.x = previous_gnss_pose.x;
     previous_pose.y = previous_gnss_pose.y;
