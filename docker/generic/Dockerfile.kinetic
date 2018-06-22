@@ -68,12 +68,6 @@ RUN apt-get update && apt-get install -y ros-kinetic-desktop-full ros-kinetic-nm
 RUN apt-get update && apt-get install -y ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers ros-kinetic-rosbridge-server
 RUN apt-get update && apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests
 
-# SSD dependencies
-#RUN apt-get update && apt-get install -y libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
-#RUN apt-get update && apt-get install --no-install-recommends -y libboost-all-dev
-#RUN apt-get update && apt-get install -y libatlas-base-dev libgoogle-glog-dev libgflags-dev liblmdb-dev
-#RUN apt-get update && apt-get install libhdf5-10 libhdf5-serial-dev libhdf5-dev libhdf5-cpp-11
-
 # Add basic user
 ENV USERNAME autoware
 ENV PULSE_SERVER /run/pulse/native
@@ -102,27 +96,31 @@ RUN sudo rosdep init \
         && rosdep update \
         && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 
-# YOLO_V2
-RUN cd && git clone https://github.com/pjreddie/darknet.git
-RUN cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
-RUN cd ~/darknet/data && wget https://pjreddie.com/media/files/yolo.weights
+# YOLO_V2 and YOLO_V3
+RUN cd ~ && git clone https://github.com/pjreddie/darknet.git darknet \
+    && cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
 
-# SSD
-#RUN cd ~ && git clone https://github.com/weiliu89/caffe.git ssdcaffe
-#RUN cd ~/ssdcaffe && git checkout 5365d0dccacd18e65f10e840eab28eb65ce0cda7
-#RUN cd ~/ssdcaffe && printf "CUDA_DIR := /usr/local/cuda \
-#	CUDA_ARCH := -gencode arch=compute_30,code=sm_30 code arch=compute_35,code=sm_35 code arch=compute_50,code=sm_50 code arch=compute_52,code=sm_52 code arch=compute_60,code=sm_60 code arch=compute_61,code=sm_61 code arch=compute_61,code=compute_61 \
-#	BLAS := atlas \
-#	PYTHON_INCLUDE := /usr/include/python2.7 2.7/dist-packages/numpy/core/include \
-#	PYTHON_LIB := /usr/lib \
-#	INCLUDE_DIRS :=  /usr/local/include /usr/include/hdf5/serial \
-#	LIBRARY_DIRS :=  /usr/local/lib /usr/lib \
-#	BUILD_DIR := build \
-#	DISTRIBUTE_DIR := distribute \
-#	TEST_GPUID := 0 \
-#	Q ?= @" >> Makefile.config
-#RUN cd ~/ssdcaffe && mkdir build && cd build && cmake .. && make all && make install # && make runtest
-#RUN cd ~/ssdcaffe/models && wget https://drive.google.com/open?id=0BzKzrI_SkD1_dlJpZHJzOXd3MTg
+COPY --chown=autoware:autoware data/yolov2/yolo.cfg /home/$USERNAME/darknet/cfg/yolo.cfg
+COPY --chown=autoware:autoware data/yolov2/yolo.weights /home/$USERNAME/darknet/data/yolo.weights
+COPY --chown=autoware:autoware data/yolov3/yolov3.cfg /home/$USERNAME/darknet/cfg/yolov3.cfg
+COPY --chown=autoware:autoware data/yolov3/yolov3.weights /home/$USERNAME/darknet/data/yolov3.weights
+
+
+# SSD dependencies
+RUN sudo apt-get update && sudo apt-get install -y libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
+RUN sudo apt-get update && sudo apt-get install --no-install-recommends -y libboost-all-dev
+RUN sudo apt-get update && sudo apt-get install -y libatlas-base-dev libgoogle-glog-dev libgflags-dev liblmdb-dev
+RUN sudo apt-get update && sudo apt-get install -y libhdf5-10 libhdf5-serial-dev libhdf5-dev libhdf5-cpp-11
+
+# SSD setup
+RUN cd ~ && git clone https://github.com/weiliu89/caffe.git ssdcaffe \
+    && cd ~/ssdcaffe && git checkout 5365d0dccacd18e65f10e840eab28eb65ce0cda7
+
+COPY --chown=autoware:autoware data/ssd/Makefile.config /home/$USERNAME/ssdcaffe/Makefile.config
+COPY --chown=autoware:autoware data/ssd/models/ /home/$USERNAME/ssdcaffe/models/
+
+RUN cd ~/ssdcaffe && make && make distribute
+
 
 # Install Autoware
 COPY autoware /home/$USERNAME/autoware
@@ -147,8 +145,3 @@ ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},graphics
 
 # Default CMD
 CMD ["/bin/bash"]
-
-
-
-
-
