@@ -5,3 +5,6 @@
 [submodule "ros/src/sensing/drivers/lidar/packages/robosense"]
 	path = ros/src/sensing/drivers/lidar/packages/robosense
 	url = https://github.com/CPFL/robosense
+[submodule "docker/generic/data"]
+	path = docker/generic/data
+	url = ../autoware-perception.git
