@@ -197,7 +197,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
 	lane_waypoint_marker.scale.x = 0.1;
 	lane_waypoint_marker.scale.y = 0.1;
-	//lane_waypoint_marker.scale.z = 0.1;
+	lane_waypoint_marker.scale.z = 0.1;
 	lane_waypoint_marker.frame_locked = false;
 	std_msgs::ColorRGBA  total_color, curr_color;
 
@@ -257,6 +257,38 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 			count++;
 		}
 	}
+}
+
+void RosHelpers::CreateLocalLaneArrayVelocityMarker(autoware_msgs::lane &lane,
+			visualization_msgs::MarkerArray& markerArray)
+{
+	visualization_msgs::Marker velocity_marker;
+	velocity_marker.header.frame_id = "map";
+	velocity_marker.header.stamp = ros::Time();
+	velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	velocity_marker.action = visualization_msgs::Marker::ADD;
+	velocity_marker.scale.z = 0.5;
+	velocity_marker.color.a = 0.9;
+	velocity_marker.color.r = 1;
+	velocity_marker.color.g = 1;
+	velocity_marker.color.b = 1;
+	velocity_marker.frame_locked = false;
+	velocity_marker.ns = "local_velocity_lane";
+	
+	int count = 1;
+	for (unsigned int i=0; i<lane.waypoints.size(); i++)
+	{
+		velocity_marker.id = i;
+		velocity_marker.pose.position.x = lane.waypoints.at(i).pose.pose.position.x;
+		velocity_marker.pose.position.y = lane.waypoints.at(i).pose.pose.position.y + 0.2;
+		velocity_marker.pose.position.z = lane.waypoints.at(i).pose.pose.position.z + 0.2;
+		
+		std::ostringstream str_out;
+		str_out << std::fixed << std::setprecision(1) <<lane.waypoints.at(i).twist.twist.linear.x;
+		velocity_marker.text = str_out.str();
+		markerArray.markers.push_back(velocity_marker);
+	}
+	count++;
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths,
