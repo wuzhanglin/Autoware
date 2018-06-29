@@ -176,7 +176,6 @@ protected:
 	ros::Publisher pub_TrackedObstaclesRviz;
 	ros::Publisher pub_LocalTrajectoriesRviz;
 	ros::Publisher pub_LocalTrajectoriesRviz_dynamic;
-	ros::Publisher pub_LocalVelocitiesRviz;
 	ros::Publisher pub_TestLineRviz;
 	ros::Publisher pub_BehaviorStateRviz;
 	ros::Publisher pub_SafetyBorderRviz;
