@@ -116,7 +116,8 @@ PlannerX::PlannerX()
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1, true);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
-	
+	pub_LocalVelocitiesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_velocities", 1);
+
 	pub_TestLineRviz	= nh.advertise<visualization_msgs::MarkerArray>("testing_line", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
 	pub_SafetyBorderRviz  = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
@@ -1051,6 +1052,10 @@ void PlannerX::PlannerMainLoop()
 	
 		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
+
+		visualization_msgs::MarkerArray all_rollOuts_vel;
+		RosHelpers::CreateLocalLaneArrayVelocityMarker(current_trajectory, all_rollOuts_vel);
+		pub_LocalVelocitiesRviz.publish(all_rollOuts_vel);
 
 		//Publish markers that visualize only when avoiding objects
 		if(enablePlannerDynamicSwitch){

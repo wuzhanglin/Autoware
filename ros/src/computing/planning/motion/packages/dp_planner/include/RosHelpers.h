@@ -208,6 +208,8 @@ public:
 
 	static void UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map);
 
+	static void CreateLocalLaneArrayVelocityMarker(autoware_msgs::lane &lane,
+			visualization_msgs::MarkerArray& markerArray);
 };
 
 }
