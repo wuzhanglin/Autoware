@@ -385,7 +385,8 @@ bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, Plan
 
 	std::vector<int> predefinedLanesIds;
 	double ret = m_PlannerH.PlanUsingDP(startPoint, goalPoint,
-			MAX_GLOBAL_PLAN_DISTANCE, predefinedLanesIds,
+			MAX_GLOBAL_PLAN_DISTANCE, m_params.bEnableLaneChange,
+			predefinedLanesIds,
 			m_Map, generatedTotalPaths, &m_PlanningVisualizeTree);
 
 	m_pCurrGoal = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(goalPoint, m_Map);
