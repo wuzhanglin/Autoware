@@ -387,7 +387,7 @@ void RosHelpers::createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneAr
   velocity_marker.header.stamp = ros::Time();
   velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
   velocity_marker.action = visualization_msgs::Marker::ADD;
-  //velocity_marker.scale.z = 0.4;
+  velocity_marker.scale.z = 0.5;
   velocity_marker.color.a = 0.9;
   velocity_marker.color.r = 1;
   velocity_marker.color.g = 1;
@@ -412,7 +412,7 @@ void RosHelpers::createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneAr
 
       // double to string
       std::ostringstream str_out;
-      str_out << lane_waypoints_array.lanes.at(i).waypoints.at(j).twist.twist.linear.x;
+      str_out << std::fixed << std::setprecision(1) << lane_waypoints_array.lanes.at(i).waypoints.at(j).twist.twist.linear.x;
       //std::string vel = str_out.str();
       velocity_marker.text = str_out.str();//vel.erase(vel.find_first_of(".") + 2);
 
