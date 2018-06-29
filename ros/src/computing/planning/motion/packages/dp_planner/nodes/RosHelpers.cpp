@@ -262,6 +262,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 void RosHelpers::CreateLocalLaneArrayVelocityMarker(autoware_msgs::lane &lane,
 			visualization_msgs::MarkerArray& markerArray)
 {
+	visualization_msgs::MarkerArray tmp_marker_array;
 	visualization_msgs::Marker velocity_marker;
 	velocity_marker.header.frame_id = "map";
 	velocity_marker.header.stamp = ros::Time();
@@ -286,9 +287,12 @@ void RosHelpers::CreateLocalLaneArrayVelocityMarker(autoware_msgs::lane &lane,
 		std::ostringstream str_out;
 		str_out << std::fixed << std::setprecision(1) <<lane.waypoints.at(i).twist.twist.linear.x;
 		velocity_marker.text = str_out.str();
-		markerArray.markers.push_back(velocity_marker);
+		
+		tmp_marker_array.markers.push_back(velocity_marker);
 	}
 	count++;
+
+	markerArray.markers.insert(markerArray.markers.end(), tmp_marker_array.markers.begin(), tmp_marker_array.markers.end());
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths,
