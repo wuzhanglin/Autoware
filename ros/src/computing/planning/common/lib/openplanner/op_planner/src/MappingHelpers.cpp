@@ -16,7 +16,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define FIND_LEFT_RIGHT_LANES
+#define FIND_LEFT_RIGHT_LANES 1
 #define RIGHT_INITIAL_TURNS_COST 0
 #define LEFT_INITIAL_TURNS_COST 0
 #define DEBUG_MAP_PARSING 0
@@ -1880,7 +1880,7 @@ void MappingHelpers::FindAdjacentLanes(RoadNetwork& map)
 					double angle_diff = UtilityH::AngleBetweenTwoAnglesPositive(mid_a1, mid_a2);
 					double distance = distance2points(wp_1.pos, closest_p.pos);
 
-					if(pL->id != map.roadSegments.at(rs_2).Lanes.at(i2).id && angle_diff < 0.05 && distance < 4.0 && distance > 2.0)
+					if(pL->id != map.roadSegments.at(rs_2).Lanes.at(i2).id && angle_diff < 0.05 && distance < 6.0 && distance > 1.5)
 					{
 						double perp_distance = DBL_MAX;
 						if(pL->points.size() > 2 && map.roadSegments.at(rs_2).Lanes.at(i2).points.size()>2)
