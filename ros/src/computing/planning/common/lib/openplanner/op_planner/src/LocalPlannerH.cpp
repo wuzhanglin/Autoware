@@ -42,6 +42,7 @@ LocalPlannerH::LocalPlannerH()
 	m_SimulationSteeringDelayFactor = 0.1;
 	UtilityH::GetTickCount(m_SteerDelayTimer);
 	m_PredictionTime = 0;
+        m_bGreenLight = false;
 
 	InitBehaviorStates();
 }
@@ -348,7 +349,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	int stopSignID = -1;
  	int trafficLightID = -1;
  	double distanceToClosestStopLine = 0;
- 	bool bGreenTrafficLight = true;
+ 	bool bGreenTrafficLight = false;
 
  	if(m_TotalPath.size()>0)
  		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(pValues->iCurrSafeLane), state, stopLineID, stopSignID, trafficLightID) - critical_long_front_distance;
@@ -362,7 +363,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  			for(unsigned int i=0; i< detectedLights.size(); i++)
  			{
  				if(detectedLights.at(i).id == trafficLightID)
- 					bGreenTrafficLight = (detectedLights.at(i).lightState == GREEN_LIGHT);
+ 					bGreenTrafficLight = (detectedLights.at(i).lightState == GREEN_LIGHT) && (m_bGreenLight == true);
  			}
  		}
 

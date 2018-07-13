@@ -45,6 +45,7 @@ public:
 	double m_BehaviorGenTime;
 	double m_RollOutsGenerationTime;
 	int m_PrevBrakingWayPoint;
+        bool m_bGreenLight;
 
 	BehaviorStateMachine* 		m_pCurrentBehaviorState;
 	ForwardState * 				m_pGoToGoalState;
