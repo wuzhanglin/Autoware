@@ -37,7 +37,7 @@ RUN dpkg --add-architecture i386 && \
 
 
 
-COPY 10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
+COPY ./docker/generic/10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
 
 RUN echo '/usr/local/lib/x86_64-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
     echo '/usr/local/lib/i386-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
@@ -99,10 +99,10 @@ RUN sudo rosdep init \
 RUN cd ~ && git clone https://github.com/pjreddie/darknet.git darknet \
     && cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
 
-COPY --chown=autoware:autoware data/yolov2/yolo.cfg /home/$USERNAME/darknet/cfg/yolo.cfg
-COPY --chown=autoware:autoware data/yolov2/yolo.weights /home/$USERNAME/darknet/data/yolo.weights
-COPY --chown=autoware:autoware data/yolov3/yolov3.cfg /home/$USERNAME/darknet/cfg/yolov3.cfg
-COPY --chown=autoware:autoware data/yolov3/yolov3.weights /home/$USERNAME/darknet/data/yolov3.weights
+COPY --chown=autoware:autoware ./docker/generic/data/yolov2/yolo.cfg /home/$USERNAME/darknet/cfg/yolo.cfg
+COPY --chown=autoware:autoware ./docker/generic/data/yolov2/yolo.weights /home/$USERNAME/darknet/data/yolo.weights
+COPY --chown=autoware:autoware ./docker/generic/data/yolov3/yolov3.cfg /home/$USERNAME/darknet/cfg/yolov3.cfg
+COPY --chown=autoware:autoware ./docker/generic/data/yolov3/yolov3.weights /home/$USERNAME/darknet/data/yolov3.weights
 
 
 # SSD dependencies
@@ -115,14 +115,14 @@ RUN sudo apt-get update && sudo apt-get install -y libhdf5-10 libhdf5-serial-dev
 RUN cd ~ && git clone https://github.com/weiliu89/caffe.git ssdcaffe \
     && cd ~/ssdcaffe && git checkout 5365d0dccacd18e65f10e840eab28eb65ce0cda7
 
-COPY --chown=autoware:autoware data/ssd/Makefile.config /home/$USERNAME/ssdcaffe/Makefile.config
-COPY --chown=autoware:autoware data/ssd/models/ /home/$USERNAME/ssdcaffe/models/
+COPY --chown=autoware:autoware ./docker/generic/data/ssd/Makefile.config /home/$USERNAME/ssdcaffe/Makefile.config
+COPY --chown=autoware:autoware ./docker/generic/data/ssd/models/ /home/$USERNAME/ssdcaffe/models/
 
 RUN cd ~/ssdcaffe && make && make distribute
 
 
 # Install Autoware
-COPY autoware /home/$USERNAME/autoware
+COPY . /home/$USERNAME/autoware
 RUN sudo chown -R autoware /home/$USERNAME/autoware
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release'
 RUN echo "source /home/$USERNAME/autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
