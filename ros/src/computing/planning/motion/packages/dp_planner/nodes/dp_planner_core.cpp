@@ -485,8 +485,10 @@ void PlannerX::callbackGetTrafficLight(const std_msgs::Int8& msg)
 {
 	std::cout << "Received Traffic Light : " << msg.data << std::endl;
 	bNewTrafficLigh = true;
-	if(msg.data == 2)
+	if(msg.data == 2) {
 		m_bGreenLight = true;
+		m_LocalPlanner.m_bGreenLight = true;
+	}
 	else
 		m_bGreenLight = false;
 }
@@ -649,6 +651,12 @@ void PlannerX::PlannerMainLoop()
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
 			std::vector<PlannerHNS::TrafficLight> trafficLight;
+
+			PlannerHNS::TrafficLight tl;
+			tl.id = 2; // SF map, In case of Moriyama map, tl.id = 20;
+			tl.lightState = PlannerHNS::TrafficLightState::GREEN_LIGHT;
+			trafficLight.push_back(tl);
+
 			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, 1, m_Map, m_bEmergencyStop, trafficLight, true);
 
 			visualization_msgs::Marker behavior_rviz;
