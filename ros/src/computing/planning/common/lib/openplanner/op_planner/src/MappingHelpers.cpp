@@ -1542,7 +1542,7 @@ void MappingHelpers::FindAdjacentLanes(RoadNetwork& map)
 					double angle_diff = UtilityH::AngleBetweenTwoAnglesPositive(mid_a1, mid_a2);
 					double distance = distance2points(wp_1.pos, closest_p.pos);
 
-					if(pL->id != map.roadSegments.at(rs_2).Lanes.at(i2).id && angle_diff < 0.05 && distance < 6.0 && distance > 1.5)
+					if(pL->id != map.roadSegments.at(rs_2).Lanes.at(i2).id && angle_diff < 0.05 && distance < 4.0 && distance > 2.0)
 					{
 						double perp_distance = 99999;
 						if(pL->points.size() > 2 && map.roadSegments.at(rs_2).Lanes.at(i2).points.size()>2)
