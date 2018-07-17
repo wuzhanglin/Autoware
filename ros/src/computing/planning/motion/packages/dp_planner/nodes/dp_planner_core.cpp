@@ -481,11 +481,11 @@ void PlannerX::callbackGetEmergencyStop(const std_msgs::Int8& msg)
 	m_bEmergencyStop = msg.data;
 }
 
-void PlannerX::callbackGetTrafficLight(const std_msgs::Int8& msg)
+void PlannerX::callbackGetTrafficLight(const autoware_msgs::traffic_light& msg)
 {
-	std::cout << "Received Traffic Light : " << msg.data << std::endl;
+	std::cout << "Received Traffic Light : " << msg.traffic_light << std::endl;
 	bNewTrafficLigh = true;
-	if(msg.data == 2) {
+	if(msg.traffic_light == 2) {
 		m_bGreenLight = true;
 		m_LocalPlanner.m_bGreenLight = true;
 	}
