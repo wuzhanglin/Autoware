@@ -1184,8 +1184,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_accel_y = (diff_time > 0) ? ((current_velocity_y - previous_velocity_y) / diff_time) : 0;
     current_accel_z = (diff_time > 0) ? ((current_velocity_z - previous_velocity_z) / diff_time) : 0;
 
-    estimated_vel_mps.data = current_velocity;
-    estimated_vel_kmph.data = current_velocity * 3.6;
+    estimated_vel_mps.data = current_velocity_smooth;
+    estimated_vel_kmph.data = current_velocity_smooth * 3.6;
 
     estimated_vel_mps_pub.publish(estimated_vel_mps);
     estimated_vel_kmph_pub.publish(estimated_vel_kmph);
@@ -1355,7 +1355,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     // Set values for /estimate_twist
     estimate_twist_msg.header.stamp = current_scan_time;
     estimate_twist_msg.header.frame_id = "/base_link";
-    estimate_twist_msg.twist.linear.x = current_velocity;
+    estimate_twist_msg.twist.linear.x = current_velocity_smooth;
     estimate_twist_msg.twist.linear.y = 0.0;
     estimate_twist_msg.twist.linear.z = 0.0;
     estimate_twist_msg.twist.angular.x = 0.0;
@@ -1366,7 +1366,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     geometry_msgs::Vector3Stamped estimate_vel_msg;
     estimate_vel_msg.header.stamp = current_scan_time;
-    estimate_vel_msg.vector.x = current_velocity;
+    estimate_vel_msg.vector.x = current_velocity_smooth;
     estimated_vel_pub.publish(estimate_vel_msg);
 
     // Set values for /ndt_stat
@@ -1374,7 +1374,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt_stat_msg.exe_time = time_ndt_matching.data;
     ndt_stat_msg.iteration = iteration;
     ndt_stat_msg.score = fitness_score;
-    ndt_stat_msg.velocity = current_velocity;
+    ndt_stat_msg.velocity = current_velocity_smooth;
     ndt_stat_msg.acceleration = current_accel;
     ndt_stat_msg.use_predict_pose = 0;
 
