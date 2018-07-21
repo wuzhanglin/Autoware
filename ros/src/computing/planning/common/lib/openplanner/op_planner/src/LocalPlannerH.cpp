@@ -351,7 +351,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  			//cout << "Detected Traffic Light: " << trafficLightID << endl;
  			for(unsigned int i=0; i< detectedLights.size(); i++)
  			{
-                               if(detectedLights.at(i).id == trafficLightID)
+ 				if(detectedLights.at(i).id == trafficLightID)
  					bGreenTrafficLight = (detectedLights.at(i).lightState == GREEN_LIGHT) && (m_bGreenLight == true);
  			}
  		}
