@@ -731,8 +731,10 @@ void PlannerX::callbackGetTrafficLight(const autoware_msgs::traffic_light& msg)
 		m_bGreenLight = true;
 		m_LocalPlanner.m_bGreenLight = true;
 	}
-	else
+	else {
 		m_bGreenLight = false;
+		m_LocalPlanner.m_bGreenLight = false;
+	}
 }
 
 void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
@@ -1103,12 +1105,12 @@ void PlannerX::PlannerMainLoop()
 		//Traffic Light Simulation Part
 		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 5)
 		{
-			m_bGreenLight = false;
+			//m_bGreenLight = false;
 			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
 		}
 		else if(!m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 10.0)
 		{
-			m_bGreenLight = true;
+			//m_bGreenLight = true;
 			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
 		}
 

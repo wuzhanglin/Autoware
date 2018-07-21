@@ -354,7 +354,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	if(m_TotalPath.size()>0)
  		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(pValues->iCurrSafeLane), state, stopLineID, stopSignID, trafficLightID) - critical_long_front_distance;
 
- 	if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance)
+        if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < 10 && distanceToClosestStopLine - pValues->minStoppingDistance > 0)
  	{
  		if(m_pCurrentBehaviorState->m_pParams->enableTrafficLightBehavior)
  		{
@@ -362,7 +362,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  			//cout << "Detected Traffic Light: " << trafficLightID << endl;
  			for(unsigned int i=0; i< detectedLights.size(); i++)
  			{
- 				if(detectedLights.at(i).id == trafficLightID)
+                               if(detectedLights.at(i).id == trafficLightID)
  					bGreenTrafficLight = (detectedLights.at(i).lightState == GREEN_LIGHT) && (m_bGreenLight == true);
  			}
  		}
