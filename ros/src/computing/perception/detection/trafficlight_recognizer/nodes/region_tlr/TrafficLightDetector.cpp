@@ -378,11 +378,13 @@ void TrafficLightDetector::brightnessDetect(const cv::Mat &input) {
   for (int i = 0; i < static_cast<int>(contexts.size()); i++) {
     Context context = contexts.at(i);
 
-    if (context.topLeft.x > context.botRight.x)
+    cv::Rect rect(context.topLeft, context.botRight);
+
+    if (rect.area() <= 0)
       continue;
 
     /* extract region of interest from input image */
-    cv::Mat roi = tmpImage(cv::Rect(context.topLeft, context.botRight));
+    cv::Mat roi = tmpImage(rect);
 
     /* convert color space (BGR -> HSV) */
     cv::Mat roi_HSV;
