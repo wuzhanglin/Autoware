@@ -56,7 +56,7 @@ static tf::StampedTransform trf;
 static bool g_use_vector_map_server; // Switch flag whether vecter-map-server function will be used
 static ros::ServiceClient g_ros_client;
 
-#define SignalLampRadius 0.3
+#define SignalLampRadius 0.5
 
 /* Define utility class to use vector map server */
 namespace
