@@ -37,6 +37,7 @@ If you have a question please check the [Wiki](https://github.com/CPFL/Autoware/
 
 ## License
 
+* Modifications by LG Electronics
 * New BSD License
     * See LICENSE
 
@@ -90,7 +91,7 @@ $ git clone https://github.com/CPFL/Autoware.git --recurse-submodules
 or if you already have a copy of the repo, run `$ git submodule update --init --recursive`.
 
 2. Initialize the workspace, let rosdep to install the missing dependencies and compile.
- 
+
 ```
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
