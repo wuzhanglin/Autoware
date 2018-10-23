@@ -1,2 +1,0 @@
-data/yolov2/yolo.cfg filter=lfs diff=lfs merge=lfs -text
-data/yolov2/yolo.weights filter=lfs diff=lfs merge=lfs -text
