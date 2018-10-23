@@ -1,260 +1,149 @@
-<div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
+# Autoware with LG SVL Simulator
 
-|Branch | Status |
-|-------|--------|
-|Master |[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=master)](https://travis-ci.org/CPFL/Autoware) |
-|Develop|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=develop)](https://travis-ci.org/CPFL/Autoware)|
+## Table of Contents
 
-# Autoware
-Open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
+[General](#general)
 
-- 3D Localization
-- 3D Mapping
-- Path Planning
-- Path Following
-- Accel/Brake/Steering Control
-- Data Logging
-- Car/Pedestrian/Object Detection
-- Traffic Signal Detection
-- Traffic Light Recognition
-- Lane Detection
-- Object Tracking
-- Sensor Calibration
-- Sensor Fusion
-- Cloud-oriented Maps
-- Connected Automation
-- Smartphone Navigation
-- Software Simulation
-- Virtual Reality
+[Setup](#setup)
 
-Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
+- [Requirements](#requirements)
 
-## Manuals and Documents
+- [Docker image setup](#docker-image-setup)
 
-Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to contribute to the maintenance of these manuals. Thank you for your cooperation!
+- [Simulator Installation](#simulator-installation)
 
-If you have a question please check the [Wiki](https://github.com/CPFL/Autoware/wiki), and the [FAQ](https://github.com/CPFL/Autoware/wiki/FAQ), [FAQ (JP)](https://github.com/CPFL/Autoware/wiki/FAQ(JP)).
+[Launching Autoware alongside Simulator](#launching-autoware-alongside-lg-svl-simulator)
 
-## License
+[Copyright and License](#copyright-and-license) 
 
-* Modifications by LG Electronics
-* New BSD License
-    * See LICENSE
+## General
 
-## Recommended Minimum System Specifications
+This repository is a fork of the ROS-based open-source software [Autoware](https://github.com/CPFL/Autoware). It contains various fixes and changes on top of Autoware to allow running it with LG Silicon Valley Lab's Autonomous Driving Simulator. 
 
-- Number of CPU cores: 8
-- RAM size: 32GB
-- Storage size: 30GB
+This fork of Autoware is currently rebased on Autoware release 1.7 (commit a5c516)
 
-## Requirements
+In order to run Autoware with the LGSVL simulator, it is easiest to build and run a custom Docker image. It will also be necessary to clone LGSVL's [autoware-data](https://github.com/lgsvl/autoware-data) repository, which contains the HD maps, point cloud maps, and launch scripts needed to run Autoware in the simulator's default San Francisco environment. 
 
-- ROS indigo (Ubuntu 14.04) or ROS jade (Ubuntu 15.04) or ROS kinetic (Ubuntu 16.04)
-- OpenCV 2.4.10 or higher
-- Qt 5.2.1 or higher
-- CUDA (optional)
-- FlyCapture2 (optional)
-- Armadillo (optional)
+Autoware communicates with the simulator using the rosbridge_suite, which provides JSON interfacing with  ROS publishers/subscribers. 
 
-**Please use checkout a revision before 2015/OCT/21 if you want to use Autoware on ROS Hydro or Ubuntu 13.04, 13.10.**
+## Setup
 
-### Install system dependencies for Ubuntu 14.04 Indigo
+### Requirements
+
+- Linux operating system
+- Nvidia graphics card
+
+### Docker image setup
+
+We recommend using a Docker container to run Autoware. We do not currently provide an image on Docker Hub, so it is necessary to build the Docker image first manually. 
+
+#### Installing Docker CE
+
+To install Docker CE please refer to the [official documentation](https://docs.docker.com/install/linux/docker-ce/ubuntu/). We also suggest following through with the [post installation steps](https://docs.docker.com/install/linux/linux-postinstall/).
+
+#### Installing Nvidia Docker
+
+Before installing nvidia-docker make sure that you have an appropriate Nvidia driver installed. To test if nvidia drivers are properly installed enter `nvidia-smi` in a terminal. If the drivers are installed properly an output similar to the following should appear.
 
 ```
-% sudo apt-get install -y  python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin
-% sudo add-apt-repository ppa:mosquitto-dev/mosquitto-ppa
-% sudo apt-get update
-% sudo apt-get install libmosquitto-dev
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 390.87                 Driver Version: 390.87                    |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  GeForce GTX 108...  Off  | 00000000:65:00.0  On |                  N/A |
+    |  0%   59C    P5    22W / 250W |   1490MiB / 11175MiB |      4%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |    0      1187      G   /usr/lib/xorg/Xorg                           863MiB |
+    |    0      3816      G   /usr/bin/gnome-shell                         305MiB |
+    |    0      4161      G   ...-token=7171B24E50C2F2C595566F55F1E4D257    68MiB |
+    |    0      4480      G   ...quest-channel-token=3330599186510203656   147MiB |
+    |    0     17936      G   ...-token=5299D28BAAD9F3087B25687A764851BB   103MiB |
+    +-----------------------------------------------------------------------------+
 ```
 
-**NOTE: Please do not install ros-indigo-velodyne-pointcloud package. If it is already installed, please uninstall.**
+The installation steps for nvidia-docker are available at the [official repo](https://github.com/NVIDIA/nvidia-docker).
 
-### Install system dependencies for Ubuntu 16.04 Kinetic
-```
-% sudo apt-get update
-% sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin libmosquitto-dev
-```
+#### Building LGSVL Autoware Docker image
 
-**NOTE: Following packages are not supported in ROS Kinetic.**
-- gazebo
-- orb slam
-- dpm ocv
-
-## How to Build
-
-1. Clone the repository
+Clone this repository to your home directory, making sure to checkout the `lgsvl_develop` branch:
 
 ```
-$ cd $HOME
-$ git clone https://github.com/CPFL/Autoware.git --recurse-submodules
-```
-or if you already have a copy of the repo, run `$ git submodule update --init --recursive`.
-
-2. Initialize the workspace, let rosdep to install the missing dependencies and compile.
-
-```
-$ cd ~/Autoware/ros/src
-$ catkin_init_workspace
-$ cd ../
-$ rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
-$ ./catkin_make_release
+$ git clone git@github.com:lgsvl/autoware.git -b lgsvl_develop
 ```
 
-###Caffe based object detectors
-CV based detectors RCNN and SSD nodes are not automatically built.
-
-To build these nodes please follow the respective node's README
-[SSD](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
-[RCNN](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
-[Yolo2](ros/src/computing/perception/detection/packages/cv_tracker/nodes/yolo2/README.md)
-[Yolo3](ros/src/computing/perception/detection/packages/yolo3_detector/README.md)
-
-
-## How to Start
+Build the Docker image. This should take some time.
 
 ```
-$ cd $HOME/Autoware/ros
-$ ./run
+$ cd autoware/docker/generic
+$ ./build.sh kinetic
 ```
 
-## For Developers
+You should now have a Docker image named `autoware-kinetic`.
 
-Be careful when changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
-The original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
-repository, you must use **git subtree push**. (Please never change and push code if you don't understand
-`git subtree` well).
+We also need LGSVL's autoware-data repository, which contains map files and launch scripts for running with the simulator. Since the point cloud files are large, it is best to use Git LFS.
 
-GitFlow, the git branching model, is used in the Autoware repository.
-- When adding new features, you can branch off your feature branch from `develop`.  
-  You can use the following command.  
-  `$ git checkout -b feature/[your_branch_name] develop`
-- When you find bugs in `master`, you can branch off your hotfix branch from `master`.  
-  You can use the following command.  
-  `$ git checkout -b hotfix/[your_branch_name] master`
+If you do not already have Git LFS installed, follow these [instructions](https://git-lfs.github.com/). 
 
-See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for tips on Autoware development, including the coding style and branching model.
+Clone the autoware-data repository:
 
-More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
+```
+$ mkdir ~/shared_dir && cd ~/shared_dir
+$ git clone git@github.com:lgsvl/autoware-data.git
+```
 
-## Main Packages
+You are now ready to bring up a Docker container and run Autoware. Launch the container:
 
-### Localization
-- ndt_localizer
-- icp_localizer
+```
+$ cd ~/autoware/docker/generic
+$ ./run.sh kinetic
+```
 
-### Detection
-- lidar_tracker
-- cv_tracker
-- trafficlight_recognizer
+You should now be logged into the container under the username `autoware`.
 
-### Mission (Global) Planning
-- lane_planner
-- way_planner
-- freespace_planner
+### Simulator installation
 
-### Motion (Local) Planning
-- astar_planner
-- lattice_planner
-- dp_planner
+Follow the instructions on our simulator Github page [here](https://github.com/lgsvl/simulator).
 
-### Vehicle Control
-- waypoint_follower
-- waypoint_maker
+## Launching Autoware alongside LG SVL Simulator
 
-## Research Papers for Citation
+To launch Autoware, first bring up the Docker container as described in the previous section. 
 
-1. S. Kato, S. Tokunaga, Y. Maruyama, S. Maeda, M. Hirabayashi, Y. Kitsukawa, A. Monrroy, T. Ando, Y. Fujii, and T. Azumi,``Autoware on Board: Enabling Autonomous Vehicles with Embedded Systems,'' In Proceedings of the 9th ACM/IEEE International Conference on Cyber-Physical Systems (ICCPS2018),  Porto (aka Oporto), Portugal, Apr. 2018. 
+Inside the container, run Autoware:
 
-2. S. Kato, E. Takeuchi, Y. Ishiguro, Y. Ninomiya, K. Takeda, and T. Hamada. "An Open Approach to Autonomous Vehicles", IEEE Micro, Vol. 35, No. 6, pp. 60-69, 2015. [![Link](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)
+```
+autoware@[MY_DESKTOP]:~$ cd ~/autoware/ros
+autoware@[MY_DESKTOP]:~$ ./run
+```
 
-## Demo Videos
+A few terminals will open, as well as a GUI for the runtime manager. In the runtime manager, click on the 'Quick Start' tab and load the following launch files from `~/shared_dir/autoware-data/my_launch` by clicking "Ref" to the right of each text box:
 
-### Public Road Demonstration
-[![Public Road Demonstration](http://img.youtube.com/vi/5DaQBZvZwAI/mqdefault.jpg)](https://www.youtube.com/watch?v=5DaQBZvZwAI)
+![](docs/images/readme-runtime-manager.png)
 
-### Test Field Demonstration
-[![Test Field Demonstration](http://img.youtube.com/vi/zujGfJcZCpQ/mqdefault.jpg)](https://www.youtube.com/watch?v=zujGfJcZCpQ)
 
-## Instructional Videos
 
-### Quick Start
-[![Quick Start](http://img.youtube.com/vi/NDNcy0C-Has/mqdefault.jpg)](https://www.youtube.com/watch?v=NDNcy0C-Has)
+Click "Map" to load the launch file pertaining to the HD maps. An "Ok" should appear to the right of the "Ref" button when successfully loaded. Then click "Sensing" which brings up rosbridge. 
 
-### Loading Map Data
-[![Loading Map Data](http://img.youtube.com/vi/OpvTeTaiXo4/mqdefault.jpg)](https://www.youtube.com/watch?v=OpvTeTaiXo4)
+Run the LG SVL simulator, choosing "SanFrancisco" map and "XE_Rigged-autoware" for Robot. After "my_sensing_simulator.launch" has been loaded, the simulator should show "Connected", showing that the simulator has established a connection with the rosbridge server. 
 
-### Localization with GNSS
-[![Localization with GNSS](http://img.youtube.com/vi/sul-osvg42A/mqdefault.jpg)](https://www.youtube.com/watch?v=sul-osvg42A)
+![](docs/images/readme-simulator.png)
 
-### Localization without GNSS
-[![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/mqdefault.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
+Click "Run" to start, and a vehicle should appear in the streets of San Francisco. On the left, click the check boxes for "Enable GPS" and "Enable LIDAR". 
 
-### Mapping
-[![Mapping](http://img.youtube.com/vi/ss6Blrz23h8/mqdefault.jpg)](https://www.youtube.com/watch?v=ss6Blrz23h8)
+In the Autoware Runtime Manager, continue loading the other launch files - click "Localization" and wait for the time to display to the right of "Ref". Then click "Detection," "Mission Planning", then "Motion Planning". 
 
-### Detection with SSD
-[![SSD](http://img.youtube.com/vi/EjamMJjkjBA/mqdefault.jpg)](https://youtu.be/EjamMJjkjBA)
+Then click "Rviz" to launch Rviz - the vector map and location of the vehicle in the map should show. 
 
-### Detection with Yolo2
-[![Yolo2](http://img.youtube.com/vi/gG_ojWOmDO0/mqdefault.jpg)](https://youtu.be/gG_ojWOmDO0)
+To see the vehicle drive, click "2D Nav Goal" in Rviz, then click a destination point and drag slightly in a feasible direction (in the direction of the driving lane) to give a goal destination pose to the planner. The vehicle should plan a path and begin driving towards the destination.
 
-### Detection with Yolo3
-[![Yolo v3 Autoware](https://img.youtube.com/vi/pO4vM4ehI98/0.jpg)](https://www.youtube.com/watch?v=pO4vM4ehI98)
 
-### Detection with DPM
-[![DPM](http://img.youtube.com/vi/P_BFQNbudlg/mqdefault.jpg)](https://youtu.be/P_BFQNbudlg)
 
-### Detection with Euclidean Clustering
-[![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/mqdefault.jpg)](https://youtu.be/Tma2DKMxt4Y)
+##  Copyright and License
 
-### Traffic Light Recognition
-[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/mqdefault.jpg)](https://youtu.be/KmOdBms9r2w)
-
-### Planning with ROSBAG
-[![Planning with ROSBAG](http://img.youtube.com/vi/B3UUKFM6Hqg/mqdefault.jpg)](https://www.youtube.com/watch?v=B3UUKFM6Hqg)
-
-### Planning with wf_simulator
-[![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/mqdefault.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
-
-### Planning with Hybrid State A*
-[![Planning with wf_simulator](http://img.youtube.com/vi/1WiqAHZHj8U/mqdefault.jpg)](https://www.youtube.com/watch?v=1WiqAHZHj8U)
-
-### Calibration Toolkit
-[![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/mqdefault.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
-
-See [https://github.com/CPFL/Autoware/wiki/Calibration(EN)](https://github.com/CPFL/Autoware/wiki/Calibration(EN))
-
-### Camera-LiDAR Calibration
-See [Autoware Camera-LiDAR Calibration](ros/src/sensing/fusion/packages/autoware_camera_lidar_calibrator/README.md)
-
-### Multi-LiDAR Calibration
-See [Autoware Multi-LiDAR Calibration](ros/src/sensing/fusion/packages/multi_lidar_calibrator/README.md)
-
-### Data Processor for Bag File
-[![Data Processor](http://img.youtube.com/vi/M38Obmy-3Ko/mqdefault.jpg)](https://youtu.be/M38Obmy-3Ko)
-
-### Ftrace
-[![Ftrace](http://img.youtube.com/vi/RoIqKgerDUw/mqdefault.jpg)](https://youtu.be/RoIqKgerDUw)
-
-## Sample Data
-
-[Moriyama demo](https://github.com/CPFL/Autoware/wiki/Demo)
-
-[ROSBAG data for calibration test](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
-
-[ROSBAG data for IROS 2016](http://db3.ertl.jp/autoware/sample_data/iros2016_two_vehicle_data.tar.gz)
-
-## ROSBAG STORE
-
-You can download many ROSBAG files for research and development of self-driving technology using Autoware.
-[https://rosbag.tier4.jp](https://rosbag.tier4.jp)
-
-## Contact
-
-Autoware Developers (<autoware@googlegroups.com>)
-
-Autoware Developers Slack Team (https://autoware.herokuapp.com/)
-
-To subscribe to the Autoware Developers mailing list,
-- If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
-- If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
+This software contains code licensed as described in LICENSE.
