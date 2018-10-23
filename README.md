@@ -1,152 +1,149 @@
-<div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
+# Autoware with LG SVL Simulator
 
-|Branch | Status |
-|-------|--------|
-|Master |[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=master)](https://travis-ci.org/CPFL/Autoware) |
-|Develop|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=develop)](https://travis-ci.org/CPFL/Autoware)|
+## Table of Contents
 
-# Autoware
-Open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
+[General](#general)
 
-- 3D Localization
-- 3D Mapping
-- Path Planning
-- Path Following
-- Accel/Brake/Steering Control
-- Data Logging
-- Car/Pedestrian/Object Detection
-- Traffic Signal Detection
-- Traffic Light Recognition
-- Lane Detection
-- Object Tracking
-- Sensor Calibration
-- Sensor Fusion
-- Cloud-oriented Maps
-- Connected Automation
-- Smartphone Navigation
-- Software Simulation
-- Virtual Reality
+[Setup](#setup)
 
-Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
+- [Requirements](#requirements)
 
-## Manuals and Documents
+- [Docker image setup](#docker-image-setup)
 
-Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to contribute to the maintenance of these manuals. Thank you for your cooperation!
+- [Simulator Installation](#simulator-installation)
 
-If you have a question please check the [Wiki](https://github.com/CPFL/Autoware/wiki), and the [FAQ](https://github.com/CPFL/Autoware/wiki/FAQ), [FAQ (JP)](https://github.com/CPFL/Autoware/wiki/FAQ(JP)).
+[Launching Autoware alongside Simulator](#launching-autoware-alongside-lg-svl-simulator)
 
-## License
+[Copyright and License](#copyright-and-license) 
 
-* Modifications by LG Electronics
-* New BSD License
-    * See LICENSE
+## General
 
-## Recommended Minimum System Specifications
+This repository is a fork of the ROS-based open-source software [Autoware](https://github.com/CPFL/Autoware). It contains various fixes and changes on top of Autoware to allow running it with LG Silicon Valley Lab's Autonomous Driving Simulator. 
 
-- Number of CPU cores: 8
-- RAM size: 32GB
-- Storage size: 30GB
+This fork of Autoware is currently rebased on Autoware release 1.7 (commit a5c516)
 
-## Requirements
+In order to run Autoware with the LGSVL simulator, it is easiest to build and run a custom Docker image. It will also be necessary to clone LGSVL's [autoware-data](https://github.com/lgsvl/autoware-data) repository, which contains the HD maps, point cloud maps, and launch scripts needed to run Autoware in the simulator's default San Francisco environment. 
 
-- ROS indigo (Ubuntu 14.04) or ROS jade (Ubuntu 15.04) or ROS kinetic (Ubuntu 16.04)
-- OpenCV 2.4.10 or higher
-- Qt 5.2.1 or higher
-- CUDA (optional)
-- FlyCapture2 (optional)
-- Armadillo (optional)
+Autoware communicates with the simulator using the rosbridge_suite, which provides JSON interfacing with  ROS publishers/subscribers. 
 
-**Please use checkout a revision before 2015/OCT/21 if you want to use Autoware on ROS Hydro or Ubuntu 13.04, 13.10.**
+## Setup
 
-### Install system dependencies for Ubuntu 14.04 Indigo
+### Requirements
 
-| *master* | *develop* |
-|----------|-----------|
-|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=master)](https://travis-ci.org/CPFL/Autoware)|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=develop)](https://travis-ci.org/CPFL/Autoware)|
+- Linux operating system
+- Nvidia graphics card
 
-[Autoware](https://www.autoware.ai) is the world's first "all-in-one" open-source software for self-driving vehicles. The capabilities of Autoware are primarily well-suited for urban cities, but highways, freeways, mesomountaineous regions, and geofenced areas can be also covered. The code base of Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation environment for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
+### Docker image setup
 
-You may refer to [Autoware Wiki](https://github.com/CPFL/Autoware/wiki) for **Users Guide** and **Developers Guide**.
+We recommend using a Docker container to run Autoware. We do not currently provide an image on Docker Hub, so it is necessary to build the Docker image first manually. 
 
-## What Is Autoware
+#### Installing Docker CE
 
-[![Autoware Overview](docs/images/autoware_overview.png)](https://github.com/CPFL/Autoware/wiki/Overview)
+To install Docker CE please refer to the [official documentation](https://docs.docker.com/install/linux/docker-ce/ubuntu/). We also suggest following through with the [post installation steps](https://docs.docker.com/install/linux/linux-postinstall/).
 
-Autoware provides a rich set of self-driving modules composed of sensing, computing, and actuation capabilities. An overview of those capabilities is described [here](https://github.com/CPFL/Autoware/wiki/Overview). Keywords include *Localization, Mapping, Object Detection & Tracking, Traffic Light Recognition, Mission & Motion Planning, Trajectory Generation, Lane Detection & Selection, Vehicle Control, Sensor Fusion, Cameras, LiDARs, RADARs, Deep Learning, Rule-based System, Connected Navigation, Logging, Virtual Reality, and so on*.
+#### Installing Nvidia Docker
 
-Free manuals can be also found at [Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to contribute to the maintenance of these manuals. Thank you for your cooperation!
-
-2. Initialize the workspace, let rosdep to install the missing dependencies and compile.
+Before installing nvidia-docker make sure that you have an appropriate Nvidia driver installed. To test if nvidia drivers are properly installed enter `nvidia-smi` in a terminal. If the drivers are installed properly an output similar to the following should appear.
 
 ```
-$ cd ~/Autoware/ros/src
-$ catkin_init_workspace
-$ cd ../
-$ rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
-$ ./catkin_make_release
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 390.87                 Driver Version: 390.87                    |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  GeForce GTX 108...  Off  | 00000000:65:00.0  On |                  N/A |
+    |  0%   59C    P5    22W / 250W |   1490MiB / 11175MiB |      4%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |    0      1187      G   /usr/lib/xorg/Xorg                           863MiB |
+    |    0      3816      G   /usr/bin/gnome-shell                         305MiB |
+    |    0      4161      G   ...-token=7171B24E50C2F2C595566F55F1E4D257    68MiB |
+    |    0      4480      G   ...quest-channel-token=3330599186510203656   147MiB |
+    |    0     17936      G   ...-token=5299D28BAAD9F3087B25687A764851BB   103MiB |
+    +-----------------------------------------------------------------------------+
 ```
 
-[![Autoware Demo](docs/images/autoware_demo.png)](https://github.com/CPFL/Autoware/wiki/Demo)
+The installation steps for nvidia-docker are available at the [official repo](https://github.com/NVIDIA/nvidia-docker).
 
-### Recommended System Specifications
+#### Building LGSVL Autoware Docker image
 
-- Number of CPU cores: 8
-- RAM size: 32GB
-- Storage size: 64GB+
+Clone this repository to your home directory, making sure to checkout the `lgsvl_develop` branch:
 
-### Users Guide
+```
+$ git clone git@github.com:lgsvl/autoware.git -b lgsvl_develop
+```
 
-1. [Installation](https://github.com/CPFL/Autoware/wiki/Installation)
-    1. [Docker](https://github.com/CPFL/Autoware/wiki/Docker)
-    1. [Source](https://github.com/CPFL/Autoware/wiki/Source-Build)
-1. [Demo](https://github.com/CPFL/Autoware/wiki/Demo)
-1. [Field Test](https://github.com/CPFL/Autoware/wiki/Field-Test)
-1. [Videos](https://github.com/CPFL/Autoware/wiki/videos)
+Build the Docker image. This should take some time.
 
-### Developers Guide
+```
+$ cd autoware/docker/generic
+$ ./build.sh kinetic
+```
 
-1. [Contribution Rules](https://github.com/CPFL/Autoware/wiki/Contribution-Rules) (**Must Read**)
-1. [Overview](https://github.com/CPFL/Autoware/wiki/Overview)
-1. [Specification](https://github.com/CPFL/Autoware/wiki/Specification)
+You should now have a Docker image named `autoware-kinetic`.
+
+We also need LGSVL's autoware-data repository, which contains map files and launch scripts for running with the simulator. Since the point cloud files are large, it is best to use Git LFS.
+
+If you do not already have Git LFS installed, follow these [instructions](https://git-lfs.github.com/). 
+
+Clone the autoware-data repository:
+
+```
+$ mkdir ~/shared_dir && cd ~/shared_dir
+$ git clone git@github.com:lgsvl/autoware-data.git
+```
+
+You are now ready to bring up a Docker container and run Autoware. Launch the container:
+
+```
+$ cd ~/autoware/docker/generic
+$ ./run.sh kinetic
+```
+
+You should now be logged into the container under the username `autoware`.
+
+### Simulator installation
+
+Follow the instructions on our simulator Github page [here](https://github.com/lgsvl/simulator).
+
+## Launching Autoware alongside LG SVL Simulator
+
+To launch Autoware, first bring up the Docker container as described in the previous section. 
+
+Inside the container, run Autoware:
+
+```
+autoware@[MY_DESKTOP]:~$ cd ~/autoware/ros
+autoware@[MY_DESKTOP]:~$ ./run
+```
+
+A few terminals will open, as well as a GUI for the runtime manager. In the runtime manager, click on the 'Quick Start' tab and load the following launch files from `~/shared_dir/autoware-data/my_launch` by clicking "Ref" to the right of each text box:
+
+![](docs/images/readme-runtime-manager.png)
 
 
-## Research Papers for Citation
 
-1. S. Kato, S. Tokunaga, Y. Maruyama, S. Maeda, M. Hirabayashi, Y. Kitsukawa, A. Monrroy, T. Ando, Y. Fujii, and T. Azumi,``Autoware on Board: Enabling Autonomous Vehicles with Embedded Systems,'' In Proceedings of the 9th ACM/IEEE International Conference on Cyber-Physical Systems (ICCPS2018),  pp. 287-296, 2018. [Link](https://dl.acm.org/citation.cfm?id=3207930)
+Click "Map" to load the launch file pertaining to the HD maps. An "Ok" should appear to the right of the "Ref" button when successfully loaded. Then click "Sensing" which brings up rosbridge. 
 
-2. S. Kato, E. Takeuchi, Y. Ishiguro, Y. Ninomiya, K. Takeda, and T. Hamada. ``An Open Approach to Autonomous Vehicles,'' IEEE Micro, Vol. 35, No. 6, pp. 60-69, 2015. [Link](https://ieeexplore.ieee.org/document/7368032/)
+Run the LG SVL simulator, choosing "SanFrancisco" map and "XE_Rigged-autoware" for Robot. After "my_sensing_simulator.launch" has been loaded, the simulator should show "Connected", showing that the simulator has established a connection with the rosbridge server. 
 
-## Cloud Services
+![](docs/images/readme-simulator.png)
 
-### Autoware Online
+Click "Run" to start, and a vehicle should appear in the streets of San Francisco. On the left, click the check boxes for "Enable GPS" and "Enable LIDAR". 
 
-You may test Autoware at [Autoware Online](http://autoware.online/). No need to install the Autoware repository to your local environment.
+In the Autoware Runtime Manager, continue loading the other launch files - click "Localization" and wait for the time to display to the right of "Ref". Then click "Detection," "Mission Planning", then "Motion Planning". 
 
-### Automan
+Then click "Rviz" to launch Rviz - the vector map and location of the vehicle in the map should show. 
 
-You may annotate and train your ROSBAG data using your web browser through [Automan](https://www.automan.ai). The trained models can be used for deep neural network algorithms in Autoware, such as SSD and Yolo.
+To see the vehicle drive, click "2D Nav Goal" in Rviz, then click a destination point and drag slightly in a feasible direction (in the direction of the driving lane) to give a goal destination pose to the planner. The vehicle should plan a path and begin driving towards the destination.
 
-### ROSBAG STORE
 
-You may download a number of test and simulation data sets from Tier IV's [ROSBAG STORE](https://rosbag.tier4.jp). Note that free accounts would not allow you to access image data due to privacy matters. 
 
-### Map Tools
+##  Copyright and License
 
-You may create 3D map data through Tier IV's [Map Tools](https://maptools.tier4.jp/). The 3D map data used in Autoware are composed of point cloud structure data and vector feature data.
-
-## License
-
-Autoware is provided under the [New BSD License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
-
-## Contact
-
-Autoware Developers Slack Team (https://autoware.herokuapp.com/)
-
-Autoware Developers (<autoware@googlegroups.com>)
-
-To subscribe to the Autoware Developers mailing list,
-- If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
-- If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
-
-***
-<div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
+This software contains code licensed as described in LICENSE.
