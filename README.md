@@ -72,10 +72,12 @@ The installation steps for nvidia-docker are available at the [official repo](ht
 
 #### Building LGSVL Autoware Docker image
 
+Cloning requires instaling Git LFS. If you do not already have Git LFS installed, follow these [instructions](https://git-lfs.github.com/). 
+
 Clone this repository to your home directory, making sure to checkout the `lgsvl_develop` branch:
 
 ```
-$ git clone git@github.com:lgsvl/autoware.git -b lgsvl_develop
+$ git clone --recurse-submodules git@github.com:lgsvl/autoware.git -b lgsvl_develop
 ```
 
 Build the Docker image. This should take some time.
@@ -87,9 +89,7 @@ $ ./build.sh kinetic
 
 You should now have a Docker image named `autoware-kinetic`.
 
-We also need LGSVL's autoware-data repository, which contains map files and launch scripts for running with the simulator. Since the point cloud files are large, it is best to use Git LFS.
-
-If you do not already have Git LFS installed, follow these [instructions](https://git-lfs.github.com/). 
+We also need LGSVL's autoware-data repository, which contains map files and launch scripts for running with the simulator. This repository also uses Git LFS.
 
 Clone the autoware-data repository:
 
