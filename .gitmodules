@@ -3,4 +3,4 @@
     url = https://github.com/astuff/platform_automation_msgs.git
 [submodule "docker/generic/data"]
     path = docker/generic/data
-    url = git@github.com:lgsvl/autoware-perception.git
+    url = ../autoware-perception.git
