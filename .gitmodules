@@ -1,9 +1,6 @@
 [submodule "ros/src/msgs/platform_automation_msgs"]
-	path = ros/src/msgs/platform_automation_msgs
-	url = https://github.com/astuff/platform_automation_msgs.git
-[submodule "docker/generic/autoware"]
-	path = docker/generic/autoware
-	url = https://auto-gitlab.lgsvl.net/duckietown/autoware.git
+    path = ros/src/msgs/platform_automation_msgs
+    url = https://github.com/astuff/platform_automation_msgs.git
 [submodule "docker/generic/data"]
-	path = docker/generic/data
-	url = git@github.com:lgsvl/autoware-perception.git
+    path = docker/generic/data
+    url = git@github.com:lgsvl/autoware-perception.git
