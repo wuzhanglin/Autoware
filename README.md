@@ -122,11 +122,16 @@ autoware@[MY_DESKTOP]:~$ cd ~/autoware/ros
 autoware@[MY_DESKTOP]:~$ ./run
 ```
 
-A few terminals will open, as well as a GUI for the runtime manager. In the runtime manager, click on the 'Quick Start' tab and load the following launch files from `~/shared_dir/autoware-data/my_launch` by clicking "Ref" to the right of each text box:
+A few terminals will open, as well as a GUI for the runtime manager. In the runtime manager, click on the 'Quick Start' tab and load the following launch files from `~/shared_dir/autoware-data/my_launch_sf_map/` by clicking "Ref" to the right of each text box:
+
+- `my_map.launch`
+- `my_sensing_simulator.launch`
+- `my_localization.launch`
+- `my_detection.launch`
+- `my_mission_planning.launch`
+- `my_motion_planning.launch`
 
 ![](docs/images/readme-runtime-manager.png)
-
-
 
 Click "Map" to load the launch file pertaining to the HD maps. An "Ok" should appear to the right of the "Ref" button when successfully loaded. Then click "Sensing" which brings up rosbridge. 
 
@@ -138,9 +143,17 @@ Click "Run" to start, and a vehicle should appear in the streets of San Francisc
 
 In the Autoware Runtime Manager, continue loading the other launch files - click "Localization" and wait for the time to display to the right of "Ref". Then click "Detection," "Mission Planning", then "Motion Planning". 
 
+![](docs/images/readme-runtime-running.png)
+
 Then click "Rviz" to launch Rviz - the vector map and location of the vehicle in the map should show. 
 
 To see the vehicle drive, click "2D Nav Goal" in Rviz, then click a destination point and drag slightly in a feasible direction (in the direction of the driving lane) to give a goal destination pose to the planner. The vehicle should plan a path and begin driving towards the destination.
+
+![](docs/images/readme-rviz.png)
+
+You should see something similar in RViz to the above when the vehicle successfully starts navigating using Autoware.
+
+![](docs/images/readme-simulator-running.png)
 
 
 
