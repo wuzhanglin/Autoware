@@ -80,9 +80,9 @@ localization_qs:
 map_qs:
   file: /home/autoware/shared_dir/autoware-data/my_launch_sf_map/my_map.launch
 mission_planning_qs:
-  file: ''
+  file: /home/autoware/shared_dir/autoware-data/my_launch_sf_map/my_mission_planning.launch
 motion_planning_qs:
-  file: ''
+  file: /home/autoware/shared_dir/autoware-data/my_launch_sf_map/my_motion_planning.launch
 pcd_binarizer:
   path_pcd_binarizer: ''
   point_type: !!python/unicode 'PointXYZ'
