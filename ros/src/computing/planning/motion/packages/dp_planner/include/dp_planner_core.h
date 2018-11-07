@@ -40,7 +40,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/TrafficLight.h>
 
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
@@ -218,7 +218,7 @@ protected:
 	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetEmergencyStop(const std_msgs::Int8& msg);
-	void callbackGetTrafficLight(const autoware_msgs::traffic_light& msg);
+	void callbackGetTrafficLight(const autoware_msgs::TrafficLight& msg);
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);
 	void callbackGetAStarPath(const autoware_msgs::LaneArrayConstPtr& msg);
 	void callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);

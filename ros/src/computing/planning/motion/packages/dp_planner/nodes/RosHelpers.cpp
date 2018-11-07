@@ -259,7 +259,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	}
 }
 
-void RosHelpers::CreateLocalLaneArrayVelocityMarker(autoware_msgs::lane &lane,
+void RosHelpers::CreateLocalLaneArrayVelocityMarker(autoware_msgs::Lane &lane,
 			visualization_msgs::MarkerArray& markerArray)
 {
 	visualization_msgs::MarkerArray tmp_marker_array;
