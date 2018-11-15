@@ -626,7 +626,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /local_trajectories
+      Marker Topic: /local_trajectories_gen_rviz
       Name: Local Rollouts
       Namespaces:
         {}
