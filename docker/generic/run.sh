@@ -22,12 +22,14 @@ else
 fi
 echo "Shared directory: ${HOST_DIR}"
 
+setfacl -m user:1000:r ${XAUTH}
+
 docker run \
     --runtime nvidia\
     -it --rm \
     --volume=$XAUTH:$XAUTH:rw \
+    --volume=$XAUTH:/home/autoware/.Xauthority:rw \
     --volume=$HOST_DIR:$SHARED_DIR:rw \
-    --env="XAUTHORITY=${XAUTH}" \
     --volume=$XSOCK:$XSOCK:rw \
     --env="DISPLAY=${DISPLAY}" \
     -u autoware \
