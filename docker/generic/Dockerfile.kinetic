@@ -20,32 +20,12 @@ RUN apt-get update && apt-get install -y \
 	x11proto-gl-dev &&\
 	rm -rf /var/lib/apt/lists/*
  
-
-WORKDIR /opt/libglvnd
-RUN git clone --branch=v1.0.0 https://github.com/NVIDIA/libglvnd.git . && \
-    ./autogen.sh && \
-    ./configure --prefix=/usr/local --libdir=/usr/local/lib/x86_64-linux-gnu && \
-    make -j"$(nproc)" install-strip && \
-    find /usr/local/lib/x86_64-linux-gnu -type f -name 'lib*.la' -delete
-
 RUN dpkg --add-architecture i386 && \
     apt-get update && apt-get install -y --no-install-recommends \
         gcc-multilib \
         libxext-dev:i386 \
         libx11-dev:i386 && \
     rm -rf /var/lib/apt/lists/*
-
-
-
-COPY ./docker/generic/10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
-
-RUN echo '/usr/local/lib/x86_64-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
-    echo '/usr/local/lib/i386-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
-    ldconfig
-
-ENV LD_LIBRARY_PATH /usr/local/lib/x86_64-linux-gnu:/usr/local/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-
-
 
 # Intall some basic GUI and sound libs
 RUN apt-get update && apt-get install -y \
@@ -63,7 +43,7 @@ RUN apt-get update && apt-get install -y \
 
 # Intall ROS
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 RUN apt-get update && apt-get install -y ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
 RUN apt-get update && apt-get install -y ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers ros-kinetic-rosbridge-server
 RUN apt-get update && apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests
@@ -87,6 +67,36 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
         echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
         # cd to home on login
         echo "cd" >> /home/$USERNAME/.bashrc
+
+# ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},graphics
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        pkg-config \
+        libxau-dev \
+        libxdmcp-dev \
+        libxcb1-dev \
+        libxext-dev \
+        libx11-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=nvidia/opengl:1.0-glvnd-runtime-ubuntu16.04 \
+  /usr/local/lib/x86_64-linux-gnu \
+  /usr/local/lib/x86_64-linux-gnu
+
+COPY --from=nvidia/opengl:1.0-glvnd-runtime-ubuntu16.04 \
+  /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json \
+  /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
+
+RUN echo '/usr/local/lib/x86_64-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
+    ldconfig && \
+    echo '/usr/local/$LIB/libGL.so.1' >> /etc/ld.so.preload && \
+    echo '/usr/local/$LIB/libEGL.so.1' >> /etc/ld.so.preload
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 # Change user
 USER autoware
@@ -139,8 +149,6 @@ RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_backgroun
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_colors" --type bool false
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/background_color" --type string "#000000"
 
-
-ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},graphics
 
 # Default CMD
 CMD ["/bin/bash"]
